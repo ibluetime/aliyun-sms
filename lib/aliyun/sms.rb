@@ -1,7 +1,7 @@
 require "aliyun/sms/version"
 require "openssl"
 require "base64"
-require 'typhoeus'
+require 'rest-client'
 require "erb"
 include ERB::Util
 
@@ -36,21 +36,21 @@ module Aliyun
       end
 
       def send(phone_numbers, template_code, template_param, out_id = '')
-        Typhoeus.get(get_url({
+        RestClient.get 'http://dysmsapi.aliyuncs.com', params: build(
           'PhoneNumbers' => phone_numbers,
           'TemplateCode' => template_code,
           'TemplateParam' => template_param,
           'OutId'	=> out_id,
           'SignatureNonce' => seed_signature_nonce,
           'Timestamp' => seed_timestamp
-          }))
+        )
       end
 
-      def get_url(user_params)
+      def build(user_params)
         params = get_params(user_params)
         coded_params = canonicalized_query_string(params)
         key_secret = configuration.access_key_secret
-        url = 'http://dysmsapi.aliyuncs.com/?' + 'Signature=' + sign(key_secret, coded_params) + '&' + coded_params
+        params.sort.to_h.reverse_merge(Signature: sign(key_secret, coded_params))
       end
 
       def get_params(user_params)
@@ -87,7 +87,7 @@ module Aliyun
         key = key_secret + '&'
         signature = 'GET' + '&' + encode('/') + '&' +  encode(coded_params)
         sign = Base64.encode64("#{OpenSSL::HMAC.digest('sha1',key, signature)}")
-        encode(sign.chomp)  # 通过chomp去掉最后的换行符 LF
+        sign.chomp  # 通过chomp去掉最后的换行符 LF
       end
 
       # 对字符串进行 PERCENT 编码
