@@ -9,7 +9,7 @@ module Aliyun
   module Sms
     class Configuration
       attr_accessor :access_key_secret, :access_key_id, :action, :format, :region_id,
-                    :sign_name, :signature_method, :signature_version, :version
+                    :sign_name, :sign_name_list, :signature_method, :signature_version, :version
 
       def initialize
         @access_key_secret = ''
@@ -18,6 +18,7 @@ module Aliyun
         @format = ''
         @region_id = ''
         @sign_name = ''
+        @sign_name_list = []
         @signature_method = ''
         @signature_version = ''
         @version = ''
@@ -63,7 +64,7 @@ module Aliyun
           'Action' => configuration.action,
           'Format' => configuration.format,
           'RegionId' => configuration.region_id,
-          'SignName' => configuration.sign_name,
+          'SignName' => configuration.sign_name_list.sample || configuration.sign_name,
           'SignatureMethod' => configuration.signature_method,
           'SignatureVersion' => configuration.signature_version,
           'Version' => configuration.version
